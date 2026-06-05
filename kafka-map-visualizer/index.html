@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Location Tracker</title>
+  <meta charset="utf-8" />
+  <style>
+    #map { height: 100vh; width: 100vw; }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <div id="map"></div>
+  <div>
+    <h2>Current Location</h2>
+    <div id="location">Waiting for data...</div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([28.6139, 77.2090], 13); // initial location
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([28.6139, 77.2090]).addTo(map);
+
+    const ws = new WebSocket('ws://localhost:8081');
+    ws.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      console.log("Received data:", data);
+      // Example: Show lat/lng as text
+      document.getElementById('location').textContent =
+        `Lat: ${data.lat}, Lng: ${data.lng}`;
+      // TODO: Update your map here if you have one
+      marker.setLatLng([data.lat, data.lng]);
+    };
+    ws.onopen = function() {
+      console.log('Connected to WebSocket server');
+    };
+    ws.onerror = function(err) {
+      console.error('WebSocket error:', err);
+    };
+  </script>
+</body>
+</html>
